@@ -1,36 +1,40 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+
 import 'package:photo_manager/photo_manager.dart';
 
 import '../export/screen.export.dart';
 import '../export/widget.export.dart';
 
-class Dashboard extends StatefulWidget {
-  final GlobalKey<ScaffoldState> dashboardKey;
-
-  const Dashboard({Key? key, required this.dashboardKey}) : super(key: key);
+class AlbumImage extends StatefulWidget {
+  final AssetPathEntity album;
+  const AlbumImage({super.key, required this.album});
 
   @override
-  State<Dashboard> createState() => _DashboardState();
+  State<AlbumImage> createState() => _AlbumImageState();
 }
 
-class _DashboardState extends State<Dashboard> {
+class _AlbumImageState extends State<AlbumImage> {
   final List<Widget> _mediaList = [];
   int currentPage = 0;
   bool isLoading = false;
   bool isEnded = false;
+
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _fetchNewMedia();
+
+    // Add scroll listener
     _scrollController.addListener(_scrollListener);
   }
 
   @override
   void dispose() {
+    // Dispose the scroll controller
     _scrollController.dispose();
     super.dispose();
   }
@@ -58,10 +62,8 @@ class _DashboardState extends State<Dashboard> {
 
     final PermissionState ps = await PhotoManager.requestPermissionExtend();
     if (ps.isAuth) {
-      List<AssetPathEntity> albums =
-          await PhotoManager.getAssetPathList(onlyAll: true);
       List<AssetEntity> media =
-          await albums[0].getAssetListPaged(size: 100, page: currentPage);
+          await widget.album.getAssetListPaged(size: 100, page: currentPage);
       if (media.isEmpty || media.length < 100) {
         setState(() {
           isEnded = true;
@@ -76,11 +78,10 @@ class _DashboardState extends State<Dashboard> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => FileView(
-                  asset: asset,
-                  heroTag: "image$index",
-                ),
-              ),
+                  builder: (context) => FileView(
+                        asset: asset,
+                        heroTag: "image$index",
+                      )),
             )
           },
           child: ClipRRect(
@@ -97,11 +98,6 @@ class _DashboardState extends State<Dashboard> {
         _mediaList.addAll(temp);
         currentPage++;
         isLoading = false;
-
-        // Check if all images are loaded
-        if (isEnded) {
-          _scrollController.removeListener(_scrollListener);
-        }
       });
     } else {
       setState(() {
@@ -114,9 +110,9 @@ class _DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Images',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        title: Text(
+          widget.album.name,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         elevation: 0,
@@ -133,11 +129,8 @@ class _DashboardState extends State<Dashboard> {
             } else {
               return isEnded
                   ? const SizedBox.shrink()
-                  : const SizedBox(
-                      width: double.infinity,
-                      child: Center(
-                        child: ShimmerImageLoader(),
-                      ),
+                  : const Center(
+                      child: ShimmerImageLoader(),
                     );
             }
           },
