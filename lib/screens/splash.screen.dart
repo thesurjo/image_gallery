@@ -62,7 +62,7 @@ class _SplashState extends State<Splash> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Image.asset('assets/images/noimage.png'),
-                      const Text('Please allow permission from setting')
+                      const Text('Please allow permission from settings')
                     ],
                   ),
                 )

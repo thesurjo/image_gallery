@@ -34,12 +34,14 @@ class _DashboardState extends State<Dashboard> {
     _scrollController.dispose();
     super.dispose();
   }
- @override
+
+  @override
   void setState(fn) {
     if (mounted) {
       super.setState(fn);
     }
   }
+
   void _scrollListener() {
     if (_scrollController.position.pixels ==
         _scrollController.position.maxScrollExtent) {
@@ -47,6 +49,11 @@ class _DashboardState extends State<Dashboard> {
         _fetchNewMedia();
       }
     }
+  }
+
+  _deleteMedia(assetId) async {
+    List<String> assets = await PhotoManager.editor.deleteWithIds([assetId]);
+    print(assets);
   }
 
   _fetchNewMedia() async {
@@ -69,7 +76,7 @@ class _DashboardState extends State<Dashboard> {
       }
       List<Widget> temp = await Future.wait(media.map((asset) async {
         var index = media.indexOf(asset);
-        final Uint8List? thumbnailData =
+        Uint8List? thumbnailData =
             await asset.thumbnailDataWithSize(const ThumbnailSize(150, 150));
         return GestureDetector(
           onTap: () => {
@@ -82,6 +89,48 @@ class _DashboardState extends State<Dashboard> {
                 ),
               ),
             )
+          },
+          onLongPress: () => {
+            // showModalBottomSheet(
+            //   context: context,
+            //   showDragHandle: true,
+            //   enableDrag: true,
+            //   builder: (BuildContext context) {
+            //     return Container(
+            //         padding: const EdgeInsets.all(20),
+            //         width: double.maxFinite,
+            //         // height: 300,
+            //         child: Column(
+            //           mainAxisSize: MainAxisSize.min,
+            //           children: [
+            //             ClipRRect(
+            //               borderRadius: BorderRadius.circular(15),
+            //               child: Image.memory(
+            //                 thumbnailData,
+            //                 fit: BoxFit.cover,
+            //                 height: 200,
+            //               ),
+            //             ),
+            //             const SizedBox(
+            //               height: 20,
+            //             ),
+            //             Row(
+            //               children: [
+            //                 Column(
+            //                   children: [
+            //                     IconButton(
+            //                         onPressed: () {
+            //                           _deleteMedia(asset.id);
+            //                         },
+            //                         icon: const Icon(Icons.delete_outline))
+            //                   ],
+            //                 )
+            //               ],
+            //             )
+            //           ],
+            //         ));
+            //   },
+            // )
           },
           child: ClipRRect(
             borderRadius: BorderRadius.circular(15),
@@ -98,7 +147,6 @@ class _DashboardState extends State<Dashboard> {
         currentPage++;
         isLoading = false;
 
-        // Check if all images are loaded
         if (isEnded) {
           _scrollController.removeListener(_scrollListener);
         }
@@ -121,28 +169,80 @@ class _DashboardState extends State<Dashboard> {
         centerTitle: true,
         elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: MasonryGridView.count(
-          controller: _scrollController,
-          crossAxisCount: 3,
-          itemCount: _mediaList.length + 1,
-          itemBuilder: (BuildContext context, int index) {
-            if (index < _mediaList.length) {
-              return Hero(tag: "image$index", child: _mediaList[index]);
-            } else {
-              return isEnded
-                  ? const SizedBox.shrink()
-                  : const SizedBox(
-                      width: double.infinity,
-                      child: Center(
-                        child: ShimmerImageLoader(),
-                      ),
-                    );
-            }
-          },
-          mainAxisSpacing: 8.0,
-          crossAxisSpacing: 8.0,
+      body: SizedBox.expand(
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: MasonryGridView.count(
+                  controller: _scrollController,
+                  crossAxisCount: 3,
+                  itemCount: _mediaList.length + 1,
+                  itemBuilder: (BuildContext context, int index) {
+                    if (index < _mediaList.length) {
+                      return Hero(tag: "image$index", child: _mediaList[index]);
+                    } else {
+                      return isEnded
+                          ? const SizedBox.shrink()
+                          : const SizedBox(
+                              width: double.infinity,
+                              child: Center(
+                                child: ShimmerImageLoader(),
+                              ),
+                            );
+                    }
+                  },
+                  mainAxisSpacing: 8.0,
+                  crossAxisSpacing: 8.0,
+                ),
+              ),
+            ),
+            SizedBox.expand(
+              child: DraggableScrollableSheet(
+                builder:
+                    (BuildContext context, ScrollController scrollController) {
+                  return Container(
+                    color: Colors.white,
+                    child: const SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Padding(
+                          padding:  EdgeInsets.symmetric(
+                              vertical: 20, horizontal: 10),
+                          child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                                Icon(Icons.abc),
+                              ]),
+                        )),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
